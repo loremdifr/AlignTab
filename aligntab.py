@@ -97,9 +97,16 @@ SMART_ALIGN_SYMBOLS = [
     ('>>',  '>>/f'),
 ]
 
-SMART_ALIGN_FALLBACK = r'\s(?=\w+)' # aligns by last whitespace before word
-# for example: static int var_name;
-#                        ^
+
+def _get_fallback(text):
+    # aligns by last whitespace before word
+    # for example: static int var_name;
+    #                        ^
+    if re.search(r';\s*$', text, re.MULTILINE):
+        return r'\s(?=\w+\s*[\[;=(])'
+    else:
+        return r'\s(?=\w+\s*[=:[(\[]|$)'
+
 
 def _detect_pattern(text):
     for symbol, pattern in SMART_ALIGN_SYMBOLS:
@@ -116,5 +123,5 @@ class AlignTabSmartCommand(sublime_plugin.TextCommand):
             return
 
         combined = '\n'.join(view.substr(s) for s in sels)
-        pattern = _detect_pattern(combined) or SMART_ALIGN_FALLBACK
+        pattern = _detect_pattern(combined) or _get_fallback(combined)
         view.run_command('align_tab', {'user_input': pattern})
