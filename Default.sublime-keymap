@@ -1,4 +1,5 @@
 [
+	{ "keys": ["ctrl+shift+alt+a"], "command": "align_tab_smart" },
 	{
 		"keys": ["up"], "command": "align_tab_history",
 		"args": {

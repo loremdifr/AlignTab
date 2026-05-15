@@ -1,5 +1,9 @@
 [
     {
+        "caption": "AlignTab: Smart Align",
+        "command": "align_tab_smart"
+    },
+    {
         "caption": "AlignTab",
         "command": "align_tab"
     },

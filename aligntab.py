@@ -1,3 +1,4 @@
+import re
 import sublime
 import sublime_plugin
 from .hist import history
@@ -74,3 +75,46 @@ class AlignTabCommand(sublime_plugin.TextCommand):
         # do not double align when done with live preview mode
         if not live_preview:
             self.view.run_command("align_tab", {"user_input": user_input, "mode": mode})
+
+
+# -------------------------------
+
+SMART_ALIGN_SYMBOLS = [
+    ('=>',  '=>/f'),
+    (':=',  ':=/f'),
+    ('->',  '->/f'),
+    ('>=',  '>=/f'),
+    ('<=',  '<=/f'),
+    ('!=',  '!=/f'),
+    ('==',  '==/f'),
+    ('=',   '=/f'),
+    (':',   ':/f'),
+    ('&&',  '&&/f'),
+    ('||',  '||/f'),
+    ('and',  'and/f'),
+    ('or',  'or/f'),
+    ('<<',  '<</f'),
+    ('>>',  '>>/f'),
+]
+
+SMART_ALIGN_FALLBACK = r'\s(?=\w+)' # aligns by last whitespace before word
+# for example: static int var_name;
+#                        ^
+
+def _detect_pattern(text):
+    for symbol, pattern in SMART_ALIGN_SYMBOLS:
+        if re.search(re.escape(symbol), text):
+            return pattern
+    return None
+
+
+class AlignTabSmartCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        view = self.view
+        sels = view.sel()
+        if not sels:
+            return
+
+        combined = '\n'.join(view.substr(s) for s in sels)
+        pattern = _detect_pattern(combined) or SMART_ALIGN_FALLBACK
+        view.run_command('align_tab', {'user_input': pattern})
